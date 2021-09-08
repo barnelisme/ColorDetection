@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import ballUnit
+import udpSend
 
 font                   = cv2.FONT_HERSHEY_SIMPLEX
 bottomLeftCornerOfText = (50,50)
@@ -94,17 +95,25 @@ while True:
 
     low_night_yellow_racket = np.array([23, 28, 184])
     up_night_yellow_racket = np.array([94, 127, 232])
+
+    low_torch = np.array([1,0,255])
+    up_torch = np.array([160,5,255])
+
+    low_red_laser = np.array([141,43,157])
+    up_red_laser = np.array([179,222,255])
+
     lower = np.array([h_min, s_min, v_min])
     upper = np.array([h_max, s_max, v_max])
 
-    mask = cv2.inRange(imghsv,low_night_yellow_racket,up_night_yellow_racket)
+
+    mask = cv2.inRange(imghsv,low_red_laser,up_red_laser)
     result = cv2.bitwise_and(img, img, mask = mask)
 
     alpha = cv2.getTrackbarPos("alpha", "Transparency")/10
     beta = cv2.getTrackbarPos("beta", "Transparency")/10
     gamma = cv2.getTrackbarPos("gamma", "Transparency")/10
 
-    print("alpha:", alpha," beta:", beta, " gamma:",gamma)
+    #print("alpha:", alpha," beta:", beta, " gamma:",gamma)
 
 
     contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[-2:]
@@ -164,8 +173,10 @@ while True:
         #cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
         cv2.rectangle(img, (x, y), (x + 50, y + 50), (0, 255, 0), 2)
 
-        Message = str(-(cx - 320) * (3.7 / 320))
-
+        #Message = str(-(cx - 320) * (3.7 / 320))
+        Message = str(cx) + ":" + str(cy)
+        print("Message:" + Message)
+        udpSend.setMessage(Message)
         img = cv2.putText(img, "Player", (cx, cy), font, fontScale, color, thickness, cv2.LINE_AA)
 
         replace = img.copy()
@@ -173,8 +184,8 @@ while True:
 
             x, y = balls[i][0][0], balls[i][0][1]
             # replace[y: y + 50, x: x + 50] = stranger1
-            overlay = cv2.addWeighted(replace[y: y + ballHeight, x: x + ballWidth], alpha, stranger1, beta, gamma)
-            replace[y: y + ballHeight, x: x + ballWidth] = overlay
+            #overlay = cv2.addWeighted(replace[y: y + ballHeight, x: x + ballWidth], alpha, stranger1, beta, gamma)
+            #replace[y: y + ballHeight, x: x + ballWidth] = overlay
 
         for j in range (numberOfBalls):
             dist = np.math.hypot(cx - balls[j][0][0], cy - balls[j][0][1])
@@ -189,9 +200,9 @@ while True:
 
 
     cv2.imshow('replace', replace)
-    # cv2.imshow('Original', img)
-    # cv2.imshow('Result Color Space', result)
-    # cv2.imshow('MASK Image', mask)
+    #cv2.imshow('Original', img)
+    #cv2.imshow('Result Color Space', result)
+    cv2.imshow('MASK Image', mask)
     #cv2.imshow('hstack', hstack)
     #cv2.imshow("frame", img)
 
