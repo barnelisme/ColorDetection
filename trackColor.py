@@ -9,9 +9,10 @@ fontScale              = 1
 color              = (0,255,0)
 thickness              = 2
 
-framewidth = 640
-frameheight = 480
-cap = cv2.VideoCapture(0)
+framewidth = 1280
+frameheight = 960
+cap = cv2.VideoCapture("rstp://192.168.8.119:554/Streaming/Channels/1")
+#cap = cv2.VideoCapture("http://admin:0000@192.168.8.117/video/mjpg.cgi")
 cap.set(3,framewidth)
 
 cap.set(4,frameheight)
@@ -75,13 +76,23 @@ cv2.createTrackbar("beta", "Transparency", 2, 20, empty)
 cv2.createTrackbar("gamma", "Transparency", 0, 20, empty)
 
 while True:
-    _,img1 = cap.read()
+    try:
+        _,img1 = cap.read()
+
+        cv2.imshow("Frame", img1)
 
     # Fliping the image
-    img = cv2.flip(img1, 1)
+    #img = cv2.flip(img1, 1)
+        img = img1
+
+        print("img:" + img)
+    except Exception as err:
+        print("Exception:" + str(err))
 
 
-    imghsv = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
+
+    #imghsv = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+    imghsv = cv2.cvtColor(img1,cv2.COLOR_BGR2HSV)
 
     h_min = cv2.getTrackbarPos("HUE Min", "HSV")
     h_max = cv2.getTrackbarPos("HUE Max", "HSV")
@@ -174,7 +185,7 @@ while True:
         cv2.rectangle(img, (x, y), (x + 50, y + 50), (0, 255, 0), 2)
 
         #Message = str(-(cx - 320) * (3.7 / 320))
-        Message = str(cx) + ":" + str(cy)
+        Message = str(cx) + ":" + str(frameheight - cy)
         print("Message:" + Message)
         udpSend.setMessage(Message)
         img = cv2.putText(img, "Player", (cx, cy), font, fontScale, color, thickness, cv2.LINE_AA)
@@ -202,7 +213,7 @@ while True:
     cv2.imshow('replace', replace)
     #cv2.imshow('Original', img)
     #cv2.imshow('Result Color Space', result)
-    cv2.imshow('MASK Image', mask)
+    cv2.imshow('MASK Image', img)
     #cv2.imshow('hstack', hstack)
     #cv2.imshow("frame", img)
 
