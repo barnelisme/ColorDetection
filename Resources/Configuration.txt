@@ -1,0 +1,6 @@
+server_url=http://127.0.0.1
+stress_vest_url=192.168.9.110
+login_endpoint=/Clockin-Student/imx/login.php
+scoring_endpoint=/Clockin-Student/imx/activescene.php
+get_trainees_endpoint=/Clockin-Student/imx/datareq.php
+range_scoring_endpoint=/Clockin-Student/imx/scorereq.php
