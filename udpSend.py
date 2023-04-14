@@ -1,7 +1,7 @@
 import socket
 
-UDP_IP_ADDRESS = "192.168.8.128"
-UDP_PORT_NO = 22222
+UDP_IP_ADDRESS ="192.168.0.255" #"192.168.8.128"
+UDP_PORT_NO = 22222 #33446 #
 message = "0"
 
 clientSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

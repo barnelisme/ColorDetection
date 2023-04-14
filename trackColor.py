@@ -9,10 +9,11 @@ fontScale              = 1
 color              = (0,255,0)
 thickness              = 2
 
-framewidth = 1280
+framewidth =1280
 frameheight = 960
-cap = cv2.VideoCapture("rstp://192.168.8.119:554/Streaming/Channels/1")
+#cap = cv2.VideoCapture("rtsp://192.168.8.119:554/Streaming/Channels/1")
 #cap = cv2.VideoCapture("http://admin:0000@192.168.8.117/video/mjpg.cgi")
+cap = cv2.VideoCapture(0           )
 cap.set(3,framewidth)
 
 cap.set(4,frameheight)
@@ -79,13 +80,12 @@ while True:
     try:
         _,img1 = cap.read()
 
-        cv2.imshow("Frame", img1)
+        #cv2.imshow("Frame", img1)
 
     # Fliping the image
     #img = cv2.flip(img1, 1)
         img = img1
 
-        print("img:" + img)
     except Exception as err:
         print("Exception:" + str(err))
 
@@ -116,16 +116,12 @@ while True:
     lower = np.array([h_min, s_min, v_min])
     upper = np.array([h_max, s_max, v_max])
 
-
     mask = cv2.inRange(imghsv,low_red_laser,up_red_laser)
     result = cv2.bitwise_and(img, img, mask = mask)
 
     alpha = cv2.getTrackbarPos("alpha", "Transparency")/10
     beta = cv2.getTrackbarPos("beta", "Transparency")/10
     gamma = cv2.getTrackbarPos("gamma", "Transparency")/10
-
-    #print("alpha:", alpha," beta:", beta, " gamma:",gamma)
-
 
     contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)[-2:]
 
@@ -134,37 +130,6 @@ while True:
     hstack = np.hstack([img,mask,result])
 
     areas = [cv2.contourArea(c) for c in contours]
-
-    for i in range(numberOfBalls):
-
-        ball = ballUnit.BallMovement(ballsMvmnt[i], ballsVerticalMvmnt[i], balls[i], framewidth, frameheight)
-        #img = cv2.circle(img, center_coordinates, radius, ballColor, ballThickness)
-        #print("Out ball:", ball)
-        # if ballsLives[i] == 1:
-        #     img = cv2.circle(img, ball[2], balls[i][2], balls[i][3], balls[i][4])
-        ballsMvmnt[i] =  ball[0]
-        ballsVerticalMvmnt[i] = ball[1]
-        balls[i][0][0] = ball[2][0]
-        balls[i][0][1] = ball[2][1]
-
-
-        for j in range (numberOfBalls):
-            if i != j:
-                dist = np.math.hypot(ball[2][0] - balls[j][0][0], ball[2][1] - balls[j][0][1])
-                #print("Distance is:", dist)
-                if dist <= (balls[i][2]*3):
-                    if(ballsMvmnt[i] == "right"):
-                        balls[i][0][0] = balls[i][0][0] - balls[i][2] * 3
-                        ballsMvmnt[i] = "left"
-                    else:
-                        balls[i][0][0] = balls[i][0][0] + balls[i][2] * 3
-                        ballsMvmnt[i] = "right"
-                    if (ballsVerticalMvmnt[i] == "down"):
-                        balls[i][0][1] = balls[i][0][1] - balls[i][2] * 3
-                        ballsVerticalMvmnt[i] = "up"
-                    else:
-                        balls[i][0][1] = balls[i][0][1] + balls[i][2] * 3
-                        ballsVerticalMvmnt[i] = "down"
 
     #print("Areas:", areas)
     replace = img1
@@ -191,19 +156,6 @@ while True:
         img = cv2.putText(img, "Player", (cx, cy), font, fontScale, color, thickness, cv2.LINE_AA)
 
         replace = img.copy()
-        for i in range (numberOfBalls):
-
-            x, y = balls[i][0][0], balls[i][0][1]
-            # replace[y: y + 50, x: x + 50] = stranger1
-            #overlay = cv2.addWeighted(replace[y: y + ballHeight, x: x + ballWidth], alpha, stranger1, beta, gamma)
-            #replace[y: y + ballHeight, x: x + ballWidth] = overlay
-
-        for j in range (numberOfBalls):
-            dist = np.math.hypot(cx - balls[j][0][0], cy - balls[j][0][1])
-            #print("Distance to Player is:", dist)
-            if dist <= (balls[i][2]*3):
-                ballsLives[j] = 0
-                print("Got a hit")
 
     except Exception as e:
         #print("ERROR:", e)
@@ -213,7 +165,7 @@ while True:
     cv2.imshow('replace', replace)
     #cv2.imshow('Original', img)
     #cv2.imshow('Result Color Space', result)
-    cv2.imshow('MASK Image', img)
+    cv2.imshow('MASK Image', mask)
     #cv2.imshow('hstack', hstack)
     #cv2.imshow("frame", img)
 
