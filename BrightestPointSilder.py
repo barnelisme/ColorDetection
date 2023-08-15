@@ -14,19 +14,33 @@ frameInit = None
 
 # UDP settings
 UDP_IP = '127.0.0.1'  # Replace with the IP address of your UDP receiver
-UDP_PORT = 5005
+UDP_PORT = 22222
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 IGNORE_RADIUS = 2
 
+framewidth = 640
+frameheight = 480
+
+
 # Function to send coordinates via UDP
 def send_coordinates(coordinates):
-    message = f"{coordinates[0]},{coordinates[1]}"
-    sock.sendto(message.encode(), (UDP_IP, UDP_PORT))
+    #message = f"{coordinates[0]},{coordinates[1]}"
+    #sock.sendto(message.encode(), (UDP_IP, UDP_PORT))
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    # print("Broadcasting")
+
+    sock.sendto(bytes(str(coordinates), "utf-8"), ("255.255.255.255", 22222))
 
 def process_stream():
     global frameInit
     # Initialize the USB camera
     cap = cv2.VideoCapture(0)
+    cap.set(3, framewidth)
+
+    cap.set(4, frameheight)
 
     # Create a window with a slider bar to adjust the threshold value
     window_name = 'Threshold'
@@ -59,6 +73,11 @@ def process_stream():
             center = (int(x), int(y))
             radius = int(radius)
 
+            #Variables for UDP Send Cordinates
+            '''max_index = np.argmax(areas)
+            cnt = contours[max_index]
+            M = cv2.moments(cnt)'''
+
             # Check if the new point is within 2 pixels of any previous point
             point_exists = False
             ''' if(previous_points.__contains__([center])):
@@ -81,7 +100,10 @@ def process_stream():
                 cv2.circle(frame, center, radius, (255, 0, 0), 2)
 
                 # Send the new point's coordinates via UDP
-                send_coordinates(center)
+                #cx = int(M['m10'] / M['m00'])
+                #cy = int(M['m01'] / M['m00'])
+                center_UDP = str(x) + ":" + str(frameheight - y)
+                send_coordinates(center_UDP)
 
                 # Add the new point to the list of previous points
                 previous_points.append(center)
@@ -133,4 +155,4 @@ if __name__ == '__main__':
     # Start the video stream processing in a separate thread
     threading.Thread(target=process_stream).start()
     # Start the Flask server in a separate thread
-    threading.Thread(target=app.run, kwargs={'host': '0.0.0.0', 'port': 5000, 'debug': False}).start()
+    #threading.Thread(target=app.run, kwargs={'host': '0.0.0.0', 'port': 5000, 'debug': False}).start()
